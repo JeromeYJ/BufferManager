@@ -10,7 +10,7 @@ using namespace std;
 // 表示页帧frame的结构体
 struct bFrame
 {
-    char field [FRAMESIZE ];
+    char field [FRAMESIZE];
 };
 
 

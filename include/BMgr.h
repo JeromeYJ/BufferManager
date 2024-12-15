@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Common.h"
+#include "DSMgr.h"
 
 class BMgr
 {
@@ -26,4 +27,6 @@ private:
     // Hash Table
     int ftop[DEFBUFSIZE];
     BCB* ptof[DEFBUFSIZE];
+    
+    DSMgr dsmgr;
 };

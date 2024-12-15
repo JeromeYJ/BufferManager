@@ -2,8 +2,9 @@
 
 using namespace std;
 
-#define DEFBUFSIZE 1024   // buffer大小
+#define DEFBUFSIZE 1024   // buffer大小（页帧数量）
 #define FRAMESIZE 4096    // 页帧大小
+#define PAGESIZE 4096     // 页大小
 #define MAXPAGES 50000    // 磁盘最大页数
 
 

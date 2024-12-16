@@ -5,7 +5,7 @@
 class BMgr
 {
 public:
-    BMgr();
+    BMgr(string filename);
     ~BMgr();
 
     // Interface functions
@@ -13,10 +13,11 @@ public:
     void FixNewPage();
     int UnfixPage(int page_id);
     int NumFreeFrames();
+
     // Internal Functions
     int SelectVictim();
-    int Hash(int page_id);
-    void RemoveBCB(BCB * ptr, int page_id); // removes the Buffer Control Block for the page_id from the array
+    BCB* Hash(int page_id); // 拉链法哈希(桶bucket)
+    void RemoveBCB(int page_id); // removes the Buffer Control Block for the page_id from the array
     void RemoveLRUEle(int frid);    // removes the LRU element from the list
     void SetDirty(int frame_id);    // if the bit is 1, it will be written. If this bit is zero, it will not be written
     void UnsetDirty(int frame_id);  // set bit 0
@@ -24,9 +25,14 @@ public:
     void PrintFrame(int frame_id);  //  prints out the contents of the frame described by the frame_id.
 
 private:
+    DSMgr dsmgr;
+    int numFreeFrames;
     // Hash Table
     int ftop[DEFBUFSIZE];
     BCB* ptof[DEFBUFSIZE];
     
-    DSMgr dsmgr;
+    // buffer
+    bFrame buffer[DEFBUFSIZE];
+
+    BCB* FrameToBCB(int frame_id);
 };

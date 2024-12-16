@@ -44,7 +44,7 @@ bFrame DSMgr::ReadPage(int page_id)
     bFrame frm;
     if(fseek(currFile, page_id * PAGESIZE, SEEK_SET))
     {
-        fprintf(stderr, "Error: cannot find page %d\n", page_id);
+        fprintf(stderr, "Error: can't find page %d\n", page_id);
         exit(1);
     }
 
@@ -58,7 +58,7 @@ int DSMgr::WritePage(int page_id, bFrame frm)
 {
     if(fseek(currFile, page_id * PAGESIZE, SEEK_SET))
     {
-        fprintf(stderr, "Error: cannot find page %d\n", page_id);
+        fprintf(stderr, "Error: can't find page %d\n", page_id);
         exit(1);
     }
     

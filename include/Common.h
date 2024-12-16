@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 
 using namespace std;
 
@@ -18,11 +19,18 @@ struct bFrame
 // Buffer Control Blocks
 struct BCB
 {
-    BCB();
     int page_id;
     int frame_id;
     int latch;
     int count;
     int dirty;
     BCB * next;
+    BCB()
+    {
+        page_id = -1;
+        frame_id = -1;
+        count = 0;
+        dirty = 0;
+        next = NULL;
+    }
 };

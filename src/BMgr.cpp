@@ -16,30 +16,107 @@ BMgr::BMgr(string filename)
         ptof[i] = new BCB();
     }
     numFreeFrames = DEFBUFSIZE;
+    replacer = new LRU();
 }
 
 BMgr::~BMgr()
 {
     // 写脏页并进行一些指针的释放
     WriteDirtys();
-
+    delete replacer;
 }
 
-int BMgr::FixPage(int page_id, int prot)
+int BMgr::FixPage(int page_id, int op)
 {
+    BCB* bcb = Hash(page_id);
+    int frame_id;
 
+    // 当对应page在buffer中
+    if(bcb != NULL)
+    {
+        frame_id = bcb->frame_id;
+        if(bcb->count == 0)
+            replacer->Fix(frame_id);
+        bcb->count++;
+        if(op == 1)
+            bcb->dirty = 1;
+    }
+    // 当对应page不在buffer中
+    else
+    {
+        if(NumFreeFrames())
+        {
+            frame_id = DEFBUFSIZE - NumFreeFrames();
+            numFreeFrames--;
+        }
+        else
+            frame_id = SelectVictim();
+        
+        // 更新buffer
+        buffer[frame_id] = dsmgr.ReadPage(page_id);
+        // 更新ftop
+        ftop[frame_id] = page_id;
+
+        // 更新ptof
+        BCB* newBcb = new BCB();
+        if(op == 1)
+            newBcb->dirty = 1;
+        newBcb->page_id = page_id;
+        newBcb->frame_id = frame_id;
+        newBcb->count = 1;
+
+        int index = page_id % DEFBUFSIZE;
+        BCB* head = ptof[index];
+        if(head == NULL)
+            ptof[index] = newBcb;
+        else
+        {
+            newBcb->next = head->next;
+            head->next = newBcb;
+        }
+
+        replacer->Fix(frame_id);
+    }
+
+    return frame_id;
 }
 
 void BMgr::FixNewPage()
 {
     // The fixNewPagefunction firsts checks this array for a use_bit of zero. If one is found, the page is reused.
     // If not, a new page is allocated.
-    
+    for (int i = 0; i < MAXPAGES; i++)
+    {
+        if(!dsmgr.GetUse(i))
+        {
+            dsmgr.SetUse(i, 1);
+            return;
+        }
+    }
+
+    if(dsmgr.GetNumPages() == MAXPAGES)
+    {
+        fprintf(stderr, "Error: too many pages\n");
+        exit(1);
+    }
+    int page_id = dsmgr.GetNumPages();
+    dsmgr.IncNumPages();
+    char data[PAGESIZE];
+    dsmgr.Seek(0, SEEK_END);
+    fwrite(data, PAGESIZE, 1, dsmgr.GetFile());
+    dsmgr.SetUse(page_id, 1);
 }
 
 int BMgr::UnfixPage(int page_id)
 {
-
+    BCB* bcb = Hash(page_id);
+    if(bcb == NULL)
+        return -1;
+    
+    bcb->count--;
+    if(bcb->count == 0)
+        replacer->UnFix(bcb->frame_id);
+    return bcb->frame_id;
 }
 
 int BMgr::NumFreeFrames()
@@ -49,7 +126,15 @@ int BMgr::NumFreeFrames()
 
 int BMgr::SelectVictim()
 {
+    int frame_id = replacer->SelectVictim();
 
+    // 更新ptof，删除对应BCB
+    RemoveBCB(ftop[frame_id]);
+
+    // 更新ftop
+    ftop[frame_id] = -1;
+
+    return frame_id;
 }
 
 BCB* BMgr::Hash(int page_id)
@@ -91,11 +176,6 @@ void BMgr::RemoveBCB(int page_id)
             bcb = bcb->next;
         }
     }
-}
-
-void BMgr::RemoveLRUEle(int frid)    
-{
-
 }
 
 BCB* BMgr::FrameToBCB(int frame_id)

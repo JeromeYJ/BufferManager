@@ -36,7 +36,7 @@ int DSMgr::OpenFile(string filename)
 
 int DSMgr::CloseFile()
 {
-    fclose(currFile);
+    return fclose(currFile);
 }
 
 bFrame DSMgr::ReadPage(int page_id)

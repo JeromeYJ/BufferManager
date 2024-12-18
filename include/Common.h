@@ -1,3 +1,6 @@
+#ifndef COMMON_H
+#define COMMON_H
+
 #include <stdio.h>
 #include <string>
 
@@ -63,3 +66,5 @@ public:
     // 选择替换的页帧
     virtual int SelectVictim() = 0;
 };
+
+#endif

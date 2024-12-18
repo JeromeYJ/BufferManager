@@ -13,6 +13,8 @@ public:
     void FixNewPage();
     int UnfixPage(int page_id);
     int NumFreeFrames();
+    long long GetNumHit();
+    long long GetNumDiskIO();
 
 private:
     DSMgr dsmgr;
@@ -26,6 +28,10 @@ private:
 
     // 缓存替换算法类
     Replacer* replacer;
+
+    // 一些用于运行统计的数据
+    long long numDiskIO;
+    long long numHit;
 
     // Internal Functions
     BCB* FrameToBCB(int frame_id);

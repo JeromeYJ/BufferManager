@@ -17,6 +17,8 @@ BMgr::BMgr(string filename)
     }
     numFreeFrames = DEFBUFSIZE;
     replacer = new LRU();
+    numDiskIO = 0;
+    numHit = 0;
 }
 
 BMgr::~BMgr()
@@ -40,6 +42,8 @@ int BMgr::FixPage(int page_id, int op)
         bcb->count++;
         if(op == 1)
             bcb->dirty = 1;
+
+        numHit++;
     }
     // 当对应page不在buffer中
     else
@@ -54,6 +58,7 @@ int BMgr::FixPage(int page_id, int op)
         
         // 更新buffer
         buffer[frame_id] = dsmgr.ReadPage(page_id);
+        numDiskIO++;
         // 更新ftop
         ftop[frame_id] = page_id;
 
@@ -157,6 +162,11 @@ void BMgr::RemoveBCB(int page_id)
     BCB* bcb = ptof[index];
     if(bcb->page_id == page_id)
     {
+        if(bcb->dirty == 1)
+        {
+            dsmgr.WritePage(page_id, buffer[bcb->frame_id]);
+            numDiskIO++;
+        }
         ptof[index] = bcb->next;
         ftop[bcb->frame_id] = -1;
         delete bcb;
@@ -168,6 +178,11 @@ void BMgr::RemoveBCB(int page_id)
             BCB* tmp = bcb->next;
             if(tmp->page_id == page_id)
             {
+                if(tmp->dirty == 1)
+                {
+                    dsmgr.WritePage(page_id, buffer[tmp->frame_id]);
+                    numDiskIO++;
+                }
                 bcb->next = tmp->next;
                 ftop[tmp->frame_id] = -1;
                 delete tmp;
@@ -226,7 +241,10 @@ void BMgr::WriteDirtys()
         {
             tmp = bcb->next;
             if(tmp->dirty == 1)
+            {
                 dsmgr.WritePage(tmp->page_id, buffer[tmp->frame_id]);
+                numDiskIO++;
+            }
             bcb->next = tmp->next;
             delete tmp;
         }
@@ -239,4 +257,14 @@ void BMgr::PrintFrame(int frame_id)
     BCB* bcb = FrameToBCB(frame_id);
     printf("frame_id: %d\n", bcb->frame_id);
     printf("page_id: %d\n", bcb->page_id);
+}
+
+long long BMgr::GetNumHit()
+{
+    return numHit;
+}
+
+long long BMgr::GetNumDiskIO()
+{
+    return numDiskIO;
 }

@@ -9,7 +9,7 @@ public:
     ~BMgr();
 
     // Interface functions
-    int FixPage(int page_id, int prot);
+    int FixPage(int page_id, int op);
     void FixNewPage();
     int UnfixPage(int page_id);
     int NumFreeFrames();

@@ -90,7 +90,7 @@ void BMgr::FixNewPage()
 {
     // The fixNewPagefunction firsts checks this array for a use_bit of zero. If one is found, the page is reused.
     // If not, a new page is allocated.
-    for (int i = 0; i < MAXPAGES; i++)
+    for (int i = 0; i < dsmgr.GetNumPages(); i++)
     {
         if(!dsmgr.GetUse(i))
         {
@@ -106,7 +106,7 @@ void BMgr::FixNewPage()
     }
     int page_id = dsmgr.GetNumPages();
     dsmgr.IncNumPages();
-    char data[PAGESIZE];
+    char data[PAGESIZE] = "data";
     dsmgr.Seek(0, SEEK_END);
     fwrite(data, PAGESIZE, 1, dsmgr.GetFile());
     dsmgr.SetUse(page_id, 1);

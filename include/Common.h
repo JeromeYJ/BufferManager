@@ -10,6 +10,7 @@ using namespace std;
 #define FRAMESIZE 4096    // 页帧大小
 #define PAGESIZE 4096     // 页大小
 #define MAXPAGES 50000    // 磁盘最大页数
+#define REQUESTNUM 500000 // 访问指令数量
 
 
 // 表示页帧frame的结构体
